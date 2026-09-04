@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { createPortal } from "react-dom";
 import type { Habit } from "../types";
+import { ModalRootContext } from "../modalRoot";
 
 export default function HomeScreen({ onMoodTap, habits, checkedIds, onToggle, onAdd, profileName }: {
   onMoodTap: () => void;
@@ -350,8 +352,12 @@ function AddHabitSheet({ onClose, onAdd }: { onClose: () => void; onAdd: (name: 
   const [selectedIcon, setSelectedIcon] = useState("🌱");
   const icons = ["🌱", "🏃", "📖", "💧", "🧘", "✍️", "🎵", "🍎", "💪", "🌙"];
   const trimmed = name.trim();
+  // Portaled to a root outside the scrollable screen content (see App.tsx) so
+  // opening this while Home is scrolled down doesn't shift it.
+  const modalRoot = useContext(ModalRootContext);
+  if (!modalRoot) return null;
 
-  return (
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
@@ -359,25 +365,33 @@ function AddHabitSheet({ onClose, onAdd }: { onClose: () => void; onAdd: (name: 
       style={{
         position: "absolute",
         inset: 0,
-        background: "rgba(40,51,40,0.45)",
+        background: "rgba(28,36,28,0.55)",
+        backdropFilter: "blur(6px)",
+        WebkitBackdropFilter: "blur(6px)",
         display: "flex",
-        flexDirection: "column",
-        justifyContent: "flex-end",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 24,
         zIndex: 50,
-        animation: "fadeIn 200ms ease forwards",
+        pointerEvents: "auto",
+        animation: "fadeIn 180ms ease forwards",
       }}
       onClick={onClose}
     >
       <div
         style={{
           background: "#F8F5F0",
-          borderRadius: "28px 28px 0 0",
-          padding: "0 24px calc(24px + env(safe-area-inset-bottom))",
-          animation: "slideUp 280ms cubic-bezier(0.4,0,0.2,1) forwards",
+          borderRadius: 26,
+          padding: "24px 24px calc(24px + env(safe-area-inset-bottom))",
+          width: "100%",
+          maxWidth: 340,
+          maxHeight: "82%",
+          overflowY: "auto",
+          boxShadow: "0 24px 60px rgba(16,22,16,0.45), 0 6px 18px rgba(16,22,16,0.25)",
+          animation: "popIn 220ms cubic-bezier(0.16,1,0.3,1) forwards",
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div aria-hidden="true" style={{ width: 40, height: 4, background: "#DDD8D0", borderRadius: 99, margin: "16px auto 20px" }} />
         <h2 id="add-habit-title" style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 600, color: "#283328", marginBottom: 16 }}>
           New habit
         </h2>
@@ -470,10 +484,11 @@ function AddHabitSheet({ onClose, onAdd }: { onClose: () => void; onAdd: (name: 
         </button>
       </div>
       <style>{`
-        @keyframes fadeIn  { from { opacity:0 } to { opacity:1 } }
-        @keyframes slideUp { from { transform:translateY(100%) } to { transform:translateY(0) } }
+        @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+        @keyframes popIn  { from { opacity:0; transform:scale(0.92) translateY(10px); } to { opacity:1; transform:scale(1) translateY(0); } }
       `}</style>
-    </div>
+    </div>,
+    modalRoot
   );
 }
 

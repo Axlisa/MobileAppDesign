@@ -5,6 +5,7 @@ import MoodScreen from "./screens/MoodScreen";
 import SettingsScreen from "./screens/SettingsScreen";
 import OnboardingFlow, { type SeedHabit } from "./screens/OnboardingFlow";
 import type { Habit } from "./types";
+import { ModalRootContext } from "./modalRoot";
 
 type Tab = "home" | "insights" | "mood" | "settings";
 const TAB_ORDER: Tab[] = ["home", "insights", "mood", "settings"];
@@ -55,6 +56,7 @@ export default function App() {
   const [checkedIds, setCheckedIds] = useState<Set<number>>(initialCheckedIds);
   const [profileName, setProfileName] = useState("Aga");
   const [profileEmail, setProfileEmail] = useState("aga@example.com");
+  const [modalRoot, setModalRoot] = useState<HTMLDivElement | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isTouchDevice = useMediaQuery(TOUCH_DEVICE_QUERY);
@@ -189,6 +191,7 @@ export default function App() {
   }
 
   return (
+    <ModalRootContext.Provider value={modalRoot}>
     <div
       style={{
         fontFamily: "var(--font-body)",
@@ -212,6 +215,11 @@ export default function App() {
                 flexDirection: "column",
                 overflow: "hidden",
                 position: "relative",
+                // Establishes a containing block for position:fixed descendants
+                // (full-screen modals) so they're scoped to the phone frame
+                // instead of the real browser viewport, and so they can't be
+                // dragged out of place by a screen's own internal scrolling.
+                transform: "translateZ(0)",
               }
             : {
                 width: 390,
@@ -223,6 +231,7 @@ export default function App() {
                 flexDirection: "column",
                 overflow: "hidden",
                 position: "relative",
+                transform: "translateZ(0)",
               }
         }
       >
@@ -282,6 +291,12 @@ export default function App() {
             <TabBar activeTab={activeTab} onNavigate={navigate} checkInDone={checkInDone} isMobile={isMobile} />
           </>
         )}
+
+        {/* Portal target for modals (Add habit, Edit profile, Sign out, info
+            sheets, …). Sits outside the scrollable screen content above, so
+            a modal opened mid-scroll always renders correctly positioned
+            over the full frame instead of inheriting that scroll offset. */}
+        <div ref={setModalRoot} style={{ position: "absolute", inset: 0, zIndex: 200, pointerEvents: "none" }} />
       </div>
 
       <style>{`
@@ -299,6 +314,7 @@ export default function App() {
         }
       `}</style>
     </div>
+    </ModalRootContext.Provider>
   );
 }
 

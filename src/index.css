@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+@theme inline {
+  --font-display: 'Fredoka', sans-serif;
+  --font-body: 'Nunito', sans-serif;
+
+  --color-bloom-cream: #F8F5F0;
+  --color-bloom-cream-dark: #EDE8E0;
+  --color-bloom-green-50: #EEF6F1;
+  --color-bloom-green-100: #D4EBDB;
+  --color-bloom-green-200: #A9D6B7;
+  --color-bloom-green-400: #6BAE82;
+  --color-bloom-green-500: #4D9467;
+  --color-bloom-green-600: #3A7A52;
+  --color-bloom-green-900: #1E3D2A;
+  --color-bloom-amber: #E8975A;
+  --color-bloom-amber-light: #FBF0E6;
+  --color-bloom-lavender: #C4B5D4;
+  --color-bloom-lavender-light: #F2EEF7;
+  --color-bloom-rose: #E8A0A0;
+  --color-bloom-rose-light: #FCEEED;
+  --color-bloom-sky: #8EC4D8;
+  --color-bloom-sky-light: #EAF5FA;
+  --color-bloom-text: #283328;
+  --color-bloom-text-muted: #7A9080;
+  --color-bloom-border: #DDD8D0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+* {
+  scrollbar-width: none;
+}

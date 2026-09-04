@@ -1,0 +1,11 @@
+{
+  "title": "Bloom - Habit & Wellness Tracker",
+  "description": "Enables users to design and prototype functional mobile app interfaces quickly, streamlining the app development process for designers and developers.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

@@ -15,28 +15,51 @@ body,
 
   --color-bloom-cream: #F8F5F0;
   --color-bloom-cream-dark: #EDE8E0;
+  --color-bloom-green-25: #F2FAF5;
   --color-bloom-green-50: #EEF6F1;
   --color-bloom-green-100: #D4EBDB;
   --color-bloom-green-200: #A9D6B7;
   --color-bloom-green-400: #6BAE82;
   --color-bloom-green-500: #4D9467;
   --color-bloom-green-600: #3A7A52;
+  --color-bloom-green-700: #3A5040;
   --color-bloom-green-900: #1E3D2A;
   --color-bloom-amber: #E8975A;
   --color-bloom-amber-light: #FBF0E6;
   --color-bloom-lavender: #C4B5D4;
   --color-bloom-lavender-light: #F2EEF7;
+  --color-bloom-lavender-deep: #9B82B8;
   --color-bloom-rose: #E8A0A0;
   --color-bloom-rose-light: #FCEEED;
   --color-bloom-sky: #8EC4D8;
   --color-bloom-sky-light: #EAF5FA;
+  --color-bloom-sky-deep: #6BAEC4;
   --color-bloom-text: #283328;
-  --color-bloom-text-muted: #7A9080;
+  /* Darkened from the original #7A9080 so muted copy clears 4.5:1 contrast on cream/white (WCAG AA). */
+  --color-bloom-text-muted: #5C7469;
+  --color-bloom-text-faint: #93A196;
   --color-bloom-border: #DDD8D0;
+
+  /* Semantic mood scale (Mood check-in), kept as tokens instead of one-off hex per screen. */
+  --color-mood-1: #E8A0A0;
+  --color-mood-1-light: #FCEEED;
+  --color-mood-2: #D9A85C;
+  --color-mood-2-light: #FDF7EA;
+  --color-mood-3: #6B93C4;
+  --color-mood-3-light: #EAF2FB;
+  --color-mood-4: #6BAE82;
+  --color-mood-4-light: #EEF6F1;
+  --color-mood-5: #E8975A;
+  --color-mood-5-light: #FBF0E6;
 }
 
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  touch-action: manipulation;
 }
 
 ::-webkit-scrollbar {
@@ -45,4 +68,23 @@ body,
 
 * {
   scrollbar-width: none;
+}
+
+/* Keyboard-navigation focus ring — visible only for keyboard/assistive use, not mouse clicks. */
+:focus-visible {
+  outline: 2px solid var(--color-bloom-green-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Respect the user's OS-level motion preference. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Dropdown from "../components/Dropdown";
 
 export type SeedHabit = { name: string; icon: string; time: string; frequency: string };
 
@@ -272,17 +273,10 @@ function CreateHabitStep({ name, setName, icon, setIcon, time, setTime, frequenc
       </div>
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
-        <label htmlFor="onb-habit-time" style={{ fontFamily: "var(--font-body)", fontSize: 12, fontWeight: 600, color: "var(--color-bloom-text-muted)" }}>
+        <span style={{ fontFamily: "var(--font-body)", fontSize: 12, fontWeight: 600, color: "var(--color-bloom-text-muted)" }}>
           Reminder time
-        </label>
-        <select
-          id="onb-habit-time"
-          value={time}
-          onChange={(e) => setTime(e.target.value)}
-          style={{ fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, color: "#4D9467", background: "#EEF6F1", borderRadius: 12, padding: "8px 12px", border: "none", outline: "none", cursor: "pointer", minHeight: 36 }}
-        >
-          {TIMES.map((t) => <option key={t}>{t}</option>)}
-        </select>
+        </span>
+        <Dropdown label="Reminder time" value={time} onChange={setTime} options={TIMES} />
       </div>
 
       <div style={{ flex: 1 }} />

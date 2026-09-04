@@ -4,9 +4,23 @@ import InsightsScreen from "./screens/InsightsScreen";
 import MoodScreen from "./screens/MoodScreen";
 import SettingsScreen from "./screens/SettingsScreen";
 import OnboardingFlow, { type SeedHabit } from "./screens/OnboardingFlow";
+import type { Habit } from "./types";
 
 type Tab = "home" | "insights" | "mood" | "settings";
 const TAB_ORDER: Tab[] = ["home", "insights", "mood", "settings"];
+
+// The one source of truth for "which habits exist" — Home, Insights, and
+// Settings all read from the same list instead of each keeping a private
+// copy, so a habit created in onboarding (or via Home's + button) shows up
+// everywhere, not just on the screen that created it.
+const SAMPLE_HABITS: (Habit & { initDone: boolean })[] = [
+  { id: 1, name: "Morning pages",   icon: "✍️", colorBg: "#EEF6F1", accent: "#4D9467", streak: 14, time: "7:00 AM",  isSample: true, initDone: false },
+  { id: 2, name: "10-min walk",     icon: "🚶", colorBg: "#EAF5FA", accent: "#6BAEC4", streak: 6,  time: "12:00 PM", isSample: true, initDone: false },
+  { id: 3, name: "Read 20 pages",   icon: "📖", colorBg: "#F2EEF7", accent: "#9B82B8", streak: 21, time: "9:00 PM",  isSample: true, initDone: true },
+  { id: 4, name: "Drink 8 glasses", icon: "💧", colorBg: "#FBF0E6", accent: "#E8975A", streak: 3,  time: "All day",  isSample: true, initDone: true },
+  { id: 5, name: "Meditate",        icon: "🌿", colorBg: "#EEF6F1", accent: "#4D9467", streak: 9,  time: "8:00 AM",  isSample: true, initDone: false },
+];
+const initialCheckedIds = () => new Set(SAMPLE_HABITS.filter((h) => h.initDone).map((h) => h.id));
 
 // A real phone (any orientation) is detected by touch-primary input, not just
 // a narrow width — that way rotating to landscape doesn't flip it back into
@@ -37,7 +51,10 @@ export default function App() {
   const [checkInDone, setCheckInDone] = useState(false);
   const [loading, setLoading] = useState(false);
   const [onboarded, setOnboarded] = useState(false);
-  const [seedHabit, setSeedHabit] = useState<SeedHabit | null>(null);
+  const [habits, setHabits] = useState<Habit[]>(SAMPLE_HABITS);
+  const [checkedIds, setCheckedIds] = useState<Set<number>>(initialCheckedIds);
+  const [profileName, setProfileName] = useState("Aga");
+  const [profileEmail, setProfileEmail] = useState("aga@example.com");
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isTouchDevice = useMediaQuery(TOUCH_DEVICE_QUERY);
@@ -52,10 +69,46 @@ export default function App() {
   // first time (this is where a real fetch of today's habits would resolve)
   // rather than skipping straight to content.
   const finishOnboarding = (habit: SeedHabit) => {
-    setSeedHabit(habit);
+    const seed: Habit = {
+      id: -1, name: habit.name, icon: habit.icon,
+      colorBg: "#EEF6F1", accent: "#4D9467", streak: 1, time: habit.time, isSample: false,
+    };
+    setHabits([seed, ...SAMPLE_HABITS]);
     setOnboarded(true);
     setLoading(true);
     setTimeout(() => setLoading(false), 550);
+  };
+
+  const toggleHabit = (id: number) =>
+    setCheckedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+
+  const addHabit = (name: string, icon: string) => {
+    setHabits((prev) => [
+      ...prev,
+      { id: Date.now(), name, icon, colorBg: "#EEF6F1", accent: "#4D9467", streak: 0, time: "Anytime", isSample: false },
+    ]);
+  };
+
+  // This is a front-end-only prototype with no backend, so "sign out" simply
+  // clears local state and drops back to onboarding — same spirit as the rest
+  // of the app: real interaction, no real persistence.
+  const resetToOnboarding = () => {
+    setOnboarded(false);
+    setHabits(SAMPLE_HABITS);
+    setCheckedIds(initialCheckedIds());
+    setCheckInDone(false);
+    setActiveTab("home");
+    setPrevTab(null);
+    setAnimating(false);
+  };
+
+  const updateProfile = (name: string, email: string) => {
+    setProfileName(name);
+    setProfileEmail(email);
   };
 
   const navigate = (tab: Tab) => {
@@ -79,10 +132,28 @@ export default function App() {
   };
 
   const screens: Record<Tab, React.ReactNode> = {
-    home: <HomeScreen onMoodTap={() => navigate("mood")} seedHabit={seedHabit} />,
-    insights: <InsightsScreen />,
+    home: (
+      <HomeScreen
+        onMoodTap={() => navigate("mood")}
+        habits={habits}
+        checkedIds={checkedIds}
+        onToggle={toggleHabit}
+        onAdd={addHabit}
+        profileName={profileName}
+      />
+    ),
+    insights: <InsightsScreen habits={habits} checkedIds={checkedIds} />,
     mood: <MoodScreen done={checkInDone} onComplete={() => setCheckInDone(true)} />,
-    settings: <SettingsScreen />,
+    settings: (
+      <SettingsScreen
+        habitCount={habits.length}
+        bestStreak={Math.max(...habits.map((h) => h.streak))}
+        profileName={profileName}
+        profileEmail={profileEmail}
+        onUpdateProfile={updateProfile}
+        onSignOut={resetToOnboarding}
+      />
+    ),
   };
 
   const dir = prevTab ? direction(prevTab, activeTab) : 0;

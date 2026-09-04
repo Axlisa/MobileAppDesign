@@ -1,54 +1,18 @@
 import { useState } from "react";
-import type { SeedHabit } from "./OnboardingFlow";
+import type { Habit } from "../types";
 
-type Habit = {
-  id: number;
-  name: string;
-  icon: string;
-  colorBg: string;
-  accent: string;
-  streak: number;
-  initDone: boolean;
-  time: string;
-};
-
-const SAMPLE_HABITS: Habit[] = [
-  { id: 1, name: "Morning pages",  icon: "✍️", colorBg: "#EEF6F1", accent: "#4D9467", streak: 14, initDone: false, time: "7:00 AM" },
-  { id: 2, name: "10-min walk",    icon: "🚶", colorBg: "#EAF5FA", accent: "#6BAEC4", streak: 6,  initDone: false, time: "12:00 PM" },
-  { id: 3, name: "Read 20 pages",  icon: "📖", colorBg: "#F2EEF7", accent: "#9B82B8", streak: 21, initDone: true,  time: "9:00 PM" },
-  { id: 4, name: "Drink 8 glasses",icon: "💧", colorBg: "#FBF0E6", accent: "#E8975A", streak: 3,  initDone: true,  time: "All day" },
-  { id: 5, name: "Meditate",       icon: "🌿", colorBg: "#EEF6F1", accent: "#4D9467", streak: 9,  initDone: false, time: "8:00 AM" },
-];
-
-export default function HomeScreen({ onMoodTap, seedHabit }: { onMoodTap: () => void; seedHabit?: SeedHabit | null }) {
-  // The habit just created during onboarding lands at the top of today's list,
-  // day-1 streak, blended in with the rest of the sample data.
-  const INITIAL_HABITS: Habit[] = seedHabit
-    ? [
-        { id: 0, name: seedHabit.name, icon: seedHabit.icon, colorBg: "#EEF6F1", accent: "#4D9467", streak: 1, initDone: false, time: seedHabit.time },
-        ...SAMPLE_HABITS,
-      ]
-    : SAMPLE_HABITS;
-
-  const [habits, setHabits] = useState<Habit[]>(INITIAL_HABITS);
-  const [checkedIds, setCheckedIds] = useState<Set<number>>(
-    new Set(INITIAL_HABITS.filter((h) => h.initDone).map((h) => h.id))
-  );
+export default function HomeScreen({ onMoodTap, habits, checkedIds, onToggle, onAdd, profileName }: {
+  onMoodTap: () => void;
+  habits: Habit[];
+  checkedIds: Set<number>;
+  onToggle: (id: number) => void;
+  onAdd: (name: string, icon: string) => void;
+  profileName: string;
+}) {
   const [showAdd, setShowAdd] = useState(false);
 
-  const toggle = (id: number) =>
-    setCheckedIds((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-
-  const addHabit = (name: string, icon: string) => {
-    const id = Date.now();
-    setHabits((prev) => [
-      ...prev,
-      { id, name, icon, colorBg: "#EEF6F1", accent: "#4D9467", streak: 0, initDone: false, time: "Anytime" },
-    ]);
+  const handleAdd = (name: string, icon: string) => {
+    onAdd(name, icon);
     setShowAdd(false);
   };
 
@@ -78,7 +42,7 @@ export default function HomeScreen({ onMoodTap, seedHabit }: { onMoodTap: () => 
               margin: 0,
             }}
           >
-            Good morning,<br />Aga 🌱
+            Good morning,<br />{profileName.split(" ")[0] || "there"} 🌱
           </h1>
         </div>
         <div
@@ -216,7 +180,7 @@ export default function HomeScreen({ onMoodTap, seedHabit }: { onMoodTap: () => 
             return (
               <button
                 key={habit.id}
-                onClick={() => toggle(habit.id)}
+                onClick={() => onToggle(habit.id)}
                 aria-pressed={done}
                 aria-label={`${habit.name}, ${done ? "completed" : "not completed"}, ${habit.streak} day streak`}
                 style={{
@@ -298,7 +262,7 @@ export default function HomeScreen({ onMoodTap, seedHabit }: { onMoodTap: () => 
       )}
 
       {/* ── Add habit sheet ──────────────────────────────────── */}
-      {showAdd && <AddHabitSheet onClose={() => setShowAdd(false)} onAdd={addHabit} />}
+      {showAdd && <AddHabitSheet onClose={() => setShowAdd(false)} onAdd={handleAdd} />}
     </div>
   );
 }
